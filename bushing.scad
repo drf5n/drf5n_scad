@@ -33,6 +33,12 @@ Flange_Thickness =0; //0.1
 //corner break
 Break = 0.2; //0.1
 
+//Hole Taper on radius, relative to top
+HoleTaper = 0.0; //0.1
+
+//Outer Taper on radius, relative to top
+OuterTaper = 0.0; //0.1
+
 
 /* [advanced] */
 
@@ -42,24 +48,26 @@ $fn=100;
 eps=0.001;
 
 
-chamfered_bushing(Inside_Diameter, Length, Outside_Diameter, Flange_OD, Flange_Thickness, Break);
+chamfered_bushing(Inside_Diameter, Length, Outside_Diameter, Flange_OD, Flange_Thickness, Break, HoleTaper,OuterTaper);
 
 
-module chamfered_bushing (di=15, h=5, do=30, fod=0, fh=0, break=0.2) {
+module chamfered_bushing (di=15, h=5, do=30, fod=0, fh=0, break=0.2,holeTaper = 0,outerTaper=0) {
     ro=do/2;
+    rob = ro - outerTaper;
     ri=di/2;
+    rib = ri-holeTaper;  // bottom inner radius
     fr = fod/2;
     translate([0,0,h/2])
         difference () {
           union(){
-            cylinder (h, ro, ro, true);
+            cylinder (h, rob, ro, true);
             if(fod != 0)translate([0,0,-h/2+fh/2+eps])cylinder(h=fh,d=fod,center=true);
         }
-        cylinder (h+2*eps, ri, ri, true);
+        cylinder (h+2*eps, rib, ri, true);
         if(Break != 0 ){
             translate([0,0,-h/2]){
-                break_circular(r=(fod<ro?ro:fod/2),break=break);
-                break_circular(r=-ri,break=break);}
+                break_circular(r=(fod<rob?rob:fod/2),break=break);
+                break_circular(r=-rib,break=break);}
             translate([0,0,h/2])rotate([180,0,0]){
                 break_circular(r=ro,break=break);
                 break_circular(r=-ri,break=break);}
